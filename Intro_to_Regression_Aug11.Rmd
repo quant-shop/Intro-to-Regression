@@ -1,0 +1,415 @@
+---
+title: "Brief Introduction to Regression, Part 1"
+subtitle: "Choosing a Model, Fitting It with OLS, and Reading the Table | Quantitative Histories Workshop"
+author: "Ari Kamau (TA)"
+date: "08-11-2026"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
+    code_folding: show
+    theme: flatly
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4.2
+)
+```
+
+# The plan for tonight
+
+
+| Section 
+|---|---------------------------------------------------------------|
+| 1 |**What is regression** 
+| 2 |**Choosing a model, and why OLS**
+| 3 |**The data: `mtcars`**   
+| 4 |**OLS Code: One Predictor**
+| 5 |**The Multiple Predictors OLS code** 
+| 6 |**The three numbers you check every time**
+| 7 |**What can go wrong** 
+
+> **Use this File!!!** Open it in RStudio. Press the green play button  (▶) at the top-right
+> of a grey box ("chunk") to run just that chunk. Press **Knit** to turn the whole
+> file into a webpage. Nothing here touches your own files. Everything uses
+> `mtcars`, a dataset that ships with R.
+
+---
+
+# What is regression?
+
+> "Regression is a statistical tool to estimate the relationship(s) between a
+> **dependent variable** ($y$ or outcome variable) and one or more
+> **independent variables** ($x$ or predicting variables)."
+> Yang (2017), *Encyclopedia of Big Data*
+
+
+- **Dependent variable** ($y$, outcome, left-hand side): the thing you are trying
+  to explain. Tonight: `mpg`.
+- **Independent variables** ($x$, predictors, regressors, right-hand side): the
+  things you think explain it. Tonight: `wt`, `hp`, `am`.
+
+Regression fits a line through a cloud of points:
+
+
+$$
+\underbrace{y_i}_{\text{what actually happened}} \;=\;
+\underbrace{\beta_0 + \beta_1 x_i}_{\text{the line}} \;+\;
+\underbrace{\varepsilon_i}_{\text{what the line missed}}
+$$
+
+Greek letters ($\beta$, $\varepsilon$) are the **population truth** — unknowable.
+Hats ($\hat{\beta}$, $\hat{y}$) are what we **estimate from a sample**. R prints
+hats.
+
+ 
+
+```{r packages}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+data(mtcars) # 32 cars from a 1974 Motor Trend magazine
+```
+
+---
+
+
+
+# Choosing a model, and why OLS 
+
+Before you can estimate or regress anything, you have to choose a functional form. That choice is a modelling decision, and it comes from theory. Tonight we choose the simplest one available: a straight line, linear in its parameters.
+
+Specifcally, we will use **Ordinary Least Squares(OLS)**.
+
+## Why OLS: ease of use and ubiquity
+
+
+
+**1. Ease of use.** OLS has a closed-form answer. You can compute it by hand:
+
+$$
+\hat{\beta}_1 = \frac{\mathrm{Cov}(x,y)}{\mathrm{Var}(x)}
+\qquad
+\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x}
+$$
+
+Of all the lines you could draw, OLS picks the one that makes the **sum of
+squared residuals** as small as possible or the **Line of Best Fit**:
+
+$$
+\min_{\hat{\beta}_0,\,\hat{\beta}_1} \sum_{i=1}^{n} e_i^2
+= \min \sum_{i=1}^{n} \left(y_i - \hat{y}_i\right)^2
+\qquad\text{where } e_i = y_i - \hat{y}_i
+$$
+
+Squaring stops positive and negative misses from cancelling, and it is what makes
+the closed form possible.
+
+**2. Ubiquity.** 
+When you read a paper in economic history, political science, or
+sociology, the table is overwhelmingly an OLS style table. Learning to read one will allow you
+to start reading the empirical literature in your field.
+
+**Note:** Under a short list of assumptions, OLS is *unbiased*. Its expected value should be the observed relationship, $E[\hat{\beta}] = \beta$. Those assumptions are
+the subject of section 7.
+
+---
+
+
+
+# The data
+
+```{r mtcars-summary}
+head(mtcars)
+summary(mtcars[, c("mpg", "wt", "hp", "disp", "am", "cyl")])
+```
+
+| Name   | Meaning                        | Type |
+|--------|--------------------------------|------|
+| `mpg`  | Miles per gallon               | continuous — **our outcome** |
+| `wt`   | Weight (1000s of lbs)          | continuous |
+| `hp`   | Gross horsepower               | continuous |
+| `disp` | Engine displacement (cu. in.)  | continuous |
+| `am`   | Transmission: 0 = auto, 1 = manual | **dummy** (0/1) |
+| `cyl`  | Number of cylinders (4, 6, 8)  | categorical |
+
+---
+
+# OLS Code: One predictor
+
+## Reading a Graph: One predictor
+
+
+```{r simple-lm, results = 'hide', echo = TRUE}
+reg1 <- lm(mpg ~ wt, data = mtcars)
+summary(reg1)
+```
+
+```{r plot-ols}
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_segment(
+    aes(xend = wt, yend = fitted(reg1)),
+    colour = "#E74C3C",
+    alpha = 0.6
+  ) + # the residuals
+  geom_point(size = 2.6, colour = "#2C3E50") +
+  geom_smooth(
+    method = "lm",
+    se = TRUE,
+    colour = "#18BC9C",
+    fill = "#18BC9C",
+    alpha = 0.15
+  ) +
+  labs(
+    title = "OLS minimizes the SUM of the SQUARES of the red segments",
+    subtitle = "Each red segment is a residual: what the line missed",
+    x = "Weight (1000 lbs)",
+    y = "Miles per gallon"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Reading the output
+
+```
+
+Call:
+lm(formula = mpg ~ wt, data = mtcars)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)  37.2851     1.8776  19.858  < 2e-16 ***
+wt           -5.3445     0.5591  -9.559 1.29e-10 ***
+```
+
+| Column | Symbol | What it means |
+|---|---|---|
+| Estimate | $\hat{\beta}_j$ | Change in $y$ for a **one-unit** change in $x_j$ |
+| Std. Error | $SE(\hat{\beta}_j)$ | How much $\hat{\beta}_j$ would bounce around across repeated samples |
+| t value | $t = \hat{\beta}_j / SE(\hat{\beta}_j)$ | How many standard errors the estimate sits from zero |
+| Pr(>&#124;t&#124;) | $p$ | Probability of a $t$ this extreme **if** $\beta_j = 0$ |
+| `***` | | $p < 0.001$. `**` < 0.01, `*` < 0.05, `.` < 0.1 |
+| Null Hypotheis | | $p < 0.001$. `**` < 0.01, `*` < 0.05, `.` < 0.1 |
+
+**In plain English:** every extra 1,000 lbs costs about 5.34 mpg, and we are very
+confident that isn't zero.
+
+
+
+## Sum of Squares
+
+Regression is bookkeeping on variation. Total variation in $y$ splits into the
+part the model explains and the part it doesn't:
+
+$$
+\underbrace{\sum(y_i - \bar{y})^2}_{SS_{\text{tot}} \text{ (Total)}} =
+\underbrace{\sum(\hat{y}_i - \bar{y})^2}_{SS_{\text{reg}} \text{ (Explained)}} +
+\underbrace{\sum(y_i - \hat{y}_i)^2}_{SS_{\text{res}} \text{ (Residual)}}
+$$
+
+| Notation | Name | What it is |
+|---|---|---|
+| $SS_{\text{tot}}$ | **Total** Sum of Squares | How much $y$ varies in total, around its own mean |
+| $SS_{\text{reg}}$ | **Regression** (Explained) Sum of Squares | The part of that variation the model accounts for |
+| $SS_{\text{res}}$ | **Residual** Sum of Squares | The part left over — what the line missed |
+
+## Reading a Full table
+
+```{r reg tabl}
+reg1 <- lm(mpg ~ wt, data = mtcars)
+summary(reg1)
+```
+
+
+| Column | Symbol | What it means |
+|---|---|---|
+| Residual standard error | $\hat{\sigma} = \sqrt{\dfrac{SS_{\text{res}}}{n-k-1}}$ | The typical miss, in the units of $y$ — here **3.046 mpg**. The square root of the leftover **variance**, i.e. $SS_{\text{res}}$ spread over the degrees of freedom |
+| Degrees of freedom | $df = n - k - 1$ | Independent information left after estimating: $32 - 1 - 1 = 30$. Every predictor spends one. Fewer df ⇒ less **precision** and a fatter t-distribution ⇒ you need a bigger $t$ to reach the same $p$ |
+| Multiple R-squared | $R^2 = \dfrac{SS_{\text{reg}}}{SS_{\text{tot}}}$ | The share of the total **variance** in $y$ the model accounts for — the sum-of-squares split above, as a single number. **0.7528** here. It never falls when you add a variable |
+| Adjusted R-squared | $\bar{R}^2$ | $R^2$ charged a fee per predictor, because each one costs a degree of freedom and therefore **precision**. **0.7446** here. This one *can* fall, which is why it's the number to compare models on |
+| F-statistic | $F = \dfrac{SS_{\text{reg}}/k}{SS_{\text{res}}/(n-k-1)}$ | A ratio of **variances**: explained per predictor over unexplained per degree of freedom. The t-tests ask "is *this one* coefficient zero?" — F asks "are *all of them together* zero?" |
+| `on 1 and 30 DF` | $k$, $\; n-k-1$ | 1 numerator df (one per predictor) and 30 denominator df — the same df as above |
+| `p-value:` (last line) | $p$ for $F$ | The p-value of the **joint** test, not of any single coefficient. Here $1.29\times10^{-10}$ |
+
+
+## $R^2$: how much did we explain?
+
+$$
+R^2 = \frac{SS_{\text{reg}}}{SS_{\text{tot}}} = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}}
+\qquad
+\bar{R}^2 = 1 - \frac{SS_{\text{res}}/(n-k-1)}{SS_{\text{tot}}/(n-1)}
+$$
+
+- $R^2$ — the **coefficient of determination** — is the share of total variation
+  in $y$ explained by the regression. Ranges 0 to 1.
+- $R^2$ **never goes down** when you add a variable, even a column of random
+  noise. That's why **adjusted $R^2$** ($\bar{R}^2$) exists: it charges a fee per
+  predictor and *can* fall. This is a penalty for overfitting.
+- A high $R^2$ doesn't mean the model is true. In history and the social
+  sciences, $R^2 = 0.15$ can be a real finding.
+
+---
+
+# The Multiple Predictors OLS code 
+
+One predictor is rarely the whole story. Add more:
+
+$$
+\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 wt_i + \hat{\beta}_2 hp_i + \hat{\beta}_3 am_i
+$$
+
+```{r multiple}
+reg2 <- lm(mpg ~ wt + hp + am, data = mtcars)
+summary(reg2)
+```
+
+
+
+## Did the extra predictors earn their keep?
+
+```{r compare-models}
+data.frame(
+  model = c("mpg ~ wt", "mpg ~ wt + hp + am"),
+  r_squared = round(c(summary(reg1)$r.squared, summary(reg2)$r.squared), 4),
+  adj_r2 = round(
+    c(summary(reg1)$adj.r.squared, summary(reg2)$adj.r.squared),
+    4
+  ),
+  resid_se = round(c(summary(reg1)$sigma, summary(reg2)$sigma), 4),
+  df_resid = c(reg1$df.residual, reg2$df.residual)
+)
+```
+
+Adjusted $R^2$ went **up** and the typical miss went **down**, while we spent two
+degrees of freedom to get there. That's the trade: every predictor buys fit and
+costs precision. Adjusted $R^2$ is the ledger that charges you for it.
+
+---
+
+# Reading a regression table: the three numbers, every time
+
+Say these out loud. You will read hundreds of these tables, and the same three
+questions answer most of them. Repetition is cheap.
+
+| Look at | Where it is | The question it answers | The trap |
+|---|---|---|---|
+| **p-value** | `Pr(>|t|)`, per coefficient | If this coefficient were truly zero, how often would I see an estimate this far from zero by luck? | It is **not** the probability your theory is right, and **not** the probability the null is true |
+| **$R^2$ / adjusted $R^2$** | bottom block | What share of the variation in $y$ did the model account for? | $R^2$ always rises when you add variables. Only **adjusted** $R^2$ can fall. High $R^2$ ≠ true model |
+| **Degrees of freedom** | `on 28 degrees of freedom` | How much independent information is left after estimating? $df = n - k - 1$ | Fewer df ⇒ fatter t-distribution ⇒ you need a bigger $t$ for the same p-value. Small samples are punished automatically |
+
+
+---
+
+# What can go wrong (tomorrow)
+
+Everything above is what happens when the model behaves. However:
+
+> **Linear regression has assumptions, and real data breaks them routinely.**
+
+OLS's unbiasedness and trustworthy standard errors are *conditional*
+on a short list of assumptions about the model and the error term. 
+
+| # | Assumption | Loosely |
+|---|---|---|
+| A1 | **Linearity** | The relationship really is linear in the parameters |
+| A2 | **Full rank** | No predictor is a perfect combination of the others |
+| A3 | **Exogeneity**, $E[\varepsilon \mid X] = 0$ | The errors are unrelated to the predictors — *the crucial one* |
+| A4 | **Homoskedasticity & nonautocorrelation** | Constant error variance, uncorrelated errors |
+| A5 | **Data generation** | $X$ comes from a mechanism unrelated to $\varepsilon$ |
+| A6 | **Normality** | Errors are normally distributed (convenient, not essential) |
+
+The regression table is only as good as the *weakest*
+assumption behind it, and R will print the table with exactly the same confident
+asterisks either way. **R will never tell you an assumption failed.** It prints
+`***` for a broken model just as happily as for a good one.
+
+
+
+> "The linear regression model ... is often only the **departure point for the full analysis**, it
+> remains the device used to begin almost all empirical research."
+> — Greene, *Econometric Analysis*, §2.1
+
+## What we'll break, and how we'll fix it — Wednesday, August 12
+
+- **Heteroskedasticity** (A4) — the error spread fans out instead of staying
+  constant. It does *not* bias $\hat{\beta}$; it biases the **standard errors**,
+  which means every p-value in your table is wrong. Fix: robust standard errors.
+- **Omitted variable bias** (A3) — leave out a variable that belongs, and its
+  effect gets smuggled into the coefficient you *did* include. This one biases
+  $\hat{\beta}$ itself. We'll sign the bias before running the model.
+- **Confounding variables** (A3) — the substantive version of the same problem:
+  something related to both $x$ and $y$, sitting outside your data. Including
+  Simpson's Paradox, where the sign flips once you condition on the group.
+- **Collinearity** (A2) — predictors carrying the same information, so
+  $\mathbf{X}'\mathbf{X}$ is nearly non-invertible and the estimates go
+  imprecise.
+- **Data cleaning strategies** — what you do *before* the regression: coding
+  decisions, outliers and influence, transformations, missing data. Most of the
+  assumptions above are won or lost here, not in the `lm()` call.
+
+Thank you!!!
+
+---
+
+# Appendix: to read after class
+
+## Vocabulary
+
+| Term | Working definition |
+|---|---|
+| **Dependent variable** ($y$) | What you're explaining |
+| **Independent variable** ($x$) | What you think explains it |
+| **Coefficient** ($\hat{\beta}_j$) | Change in $y$ per one-unit change in $x_j$, holding others fixed |
+| **Intercept** ($\hat{\beta}_0$) | Predicted $y$ when all $x = 0$; anchors the line's height |
+| **Residual** ($e_i = y_i - \hat{y}_i$) | What the line missed, in the sample |
+| **Error term** ($\varepsilon_i$) | The population version of the residual — unobservable |
+| **OLS** | The rule: pick the line minimizing $\sum e_i^2$ |
+| **$SS_{\text{tot}}$** | Total Sum of Squares — all the variation in $y$ |
+| **$SS_{\text{reg}}$** | Regression (Explained) Sum of Squares — the part the model accounts for |
+| **$SS_{\text{res}}$** | Residual Sum of Squares — the part it doesn't. $SS_{\text{tot}} = SS_{\text{reg}} + SS_{\text{res}}$ |
+| **$R^2$** | $SS_{\text{reg}} / SS_{\text{tot}}$ — share of variation explained |
+| **Adjusted $R^2$** | $R^2$ with a penalty per predictor; can fall, can go negative |
+| **Standard error** | How much an estimate would bounce across samples |
+| **t-statistic** | $\hat{\beta}_j / SE(\hat{\beta}_j)$ — distance from zero, in SEs |
+| **p-value** | P(result this extreme \| the null is true). Not P(null is true) |
+| **F-statistic** | Are *all* the coefficients jointly zero? |
+| **Degrees of freedom** | $n - k - 1$: information left after estimating |
+| **Dummy variable** | A 0/1 indicator; its coefficient is a difference in intercepts |
+| **Partial effect** | "Holding the other predictors fixed" |
+| **Unbiased estimator** | $E[\hat{\beta}] = \beta$ — right on average across repeated samples |
+
+
+## R commands from tonight
+
+| Command | Does |
+|---|---|
+| `summary(d)` | five-number summary of each column |
+| `lm(y ~ x, data = d)` | fit a linear model |
+| `lm(y ~ x1 + x2 + x3, data = d)` | multiple regression |
+| `summary(model)` | the full output table |
+| `fitted(model)` / `resid(model)` | $\hat{y}$ / $e$ |
+| `coef(model)` | the coefficients alone |
+| `coef(summary(model))` | the coefficient matrix (estimate, SE, t, p) |
+| `model$df.residual` | degrees of freedom, $n - k - 1$ |
+| `summary(model)$r.squared` / `$adj.r.squared` / `$sigma` | $R^2$ / $\bar{R}^2$ / residual SE |
+
+---
+
+**Sources:** Yang, Q. (2017). "Regression." In L.A. Schintler & C.L. McNeely
+(eds.), *Encyclopedia of Big Data*. Springer.
+DOI 10.1007/978-3-319-32001-4_174-1.
+Greene, W.H. (2003). *Econometric Analysis*, 5th ed. Prentice Hall — Ch. 2 (the
+classical linear regression model and its assumptions) and Ch. 3 (least squares,
+the sum-of-squares decomposition, and $R^2$).
+Data: Henderson & Velleman (1981), *Motor Trend* 1974, via R's `mtcars`.

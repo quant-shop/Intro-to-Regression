@@ -1,0 +1,45 @@
+# --- Rendered output from the .Rmd -------------------------------------------
+*.html
+*.pdf
+*.docx
+*_files/
+*_cache/
+/cache/
+
+# --- R session / history -----------------------------------------------------
+.Rhistory
+.Rapp.history
+.RData
+.RDataTmp
+.Ruserdata
+*.Rproj.user/
+.Rproj.user/
+
+# --- knitr / rmarkdown intermediates -----------------------------------------
+*.utf8.md
+*.knit.md
+*.tex
+*.log
+*.aux
+*.out
+*.toc
+
+# --- R package / build artifacts ---------------------------------------------
+*.Rcheck/
+.Rprofile.user
+.httr-oauth
+.Renviron
+renv/library/
+renv/staging/
+
+# --- Editors and OS ----------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
