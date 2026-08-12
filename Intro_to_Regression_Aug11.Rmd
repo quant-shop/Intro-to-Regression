@@ -311,7 +311,7 @@ questions answer most of them. Repetition is cheap.
 
 ---
 
-# What can go wrong (tomorrow)
+# What can go wrong 
 
 Everything above is what happens when the model behaves. However:
 
