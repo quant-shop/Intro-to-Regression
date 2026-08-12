@@ -1,4 +1,4 @@
-# Brief Introduction to Regression, Part 1
+# Brief Introduction to Regression
 
 **Quantitative Histories Workshop** · Session delivered 11 August 2026
 Author: Ari Kamau (TA)
