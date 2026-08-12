@@ -340,23 +340,7 @@ asterisks either way. **R will never tell you an assumption failed.** It prints
 > remains the device used to begin almost all empirical research."
 > — Greene, *Econometric Analysis*, §2.1
 
-## What we'll break, and how we'll fix it — Wednesday, August 12
 
-- **Heteroskedasticity** (A4) — the error spread fans out instead of staying
-  constant. It does *not* bias $\hat{\beta}$; it biases the **standard errors**,
-  which means every p-value in your table is wrong. Fix: robust standard errors.
-- **Omitted variable bias** (A3) — leave out a variable that belongs, and its
-  effect gets smuggled into the coefficient you *did* include. This one biases
-  $\hat{\beta}$ itself. We'll sign the bias before running the model.
-- **Confounding variables** (A3) — the substantive version of the same problem:
-  something related to both $x$ and $y$, sitting outside your data. Including
-  Simpson's Paradox, where the sign flips once you condition on the group.
-- **Collinearity** (A2) — predictors carrying the same information, so
-  $\mathbf{X}'\mathbf{X}$ is nearly non-invertible and the estimates go
-  imprecise.
-- **Data cleaning strategies** — what you do *before* the regression: coding
-  decisions, outliers and influence, transformations, missing data. Most of the
-  assumptions above are won or lost here, not in the `lm()` call.
 
 Thank you!!!
 
