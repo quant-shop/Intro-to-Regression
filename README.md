@@ -59,31 +59,7 @@ No other data files are needed. `mtcars` is built into base R.
    just that chunk.
 3. Press **Knit** to render the whole file to HTML.
 
-**From the console**
 
-```r
-rmarkdown::render("Intro_to_Regression_Aug11.Rmd")
-```
-
-Either produces `Intro_to_Regression_Aug11.html` in the same folder. Rendered
-output is intentionally not tracked in git — see `.gitignore`.
-
-## Repository layout
-
-```
-.
-├── Intro_to_Regression_Aug11.Rmd   # the lesson
-├── README.md
-├── LICENSE                          # CC BY 4.0
-└── .gitignore                       # R, RStudio, and rendered-output artifacts
-```
-
-## Part 2
-
-The follow-up session (12 August 2026) breaks the assumptions this one relies on
-and shows the repairs: robust standard errors for heteroskedasticity, signing
-omitted variable bias, confounders and Simpson's Paradox, collinearity, and the
-data-cleaning decisions made before the `lm()` call ever runs.
 
 ## Sources
 
@@ -94,8 +70,3 @@ data-cleaning decisions made before the `lm()` call ever runs.
   Ch. 3 (least squares, the sum-of-squares decomposition, and $R^2$)
 - Henderson & Velleman (1981), *Motor Trend* 1974 — via R's `mtcars`
 
-## License
-
-[Creative Commons Attribution 4.0 International](LICENSE) (CC BY 4.0). You are
-free to share and adapt these materials, including for commercial purposes,
-provided you give appropriate credit.
