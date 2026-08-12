@@ -1,8 +1,5 @@
 # Brief Introduction to Regression, Part 1
 
-Teaching materials for a workshop session on ordinary least squares (OLS)
-regression: choosing a model, fitting it, and reading the output table.
-
 **Quantitative Histories Workshop** · Session delivered 11 August 2026
 Author: Ari Kamau (TA)
 
